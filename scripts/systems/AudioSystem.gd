@@ -2,6 +2,7 @@ extends Node
 class_name AudioSystem
 
 const SOUND_ROOT: String = "res://assets/sound/explosion/"
+const THEME_PATH: String = "res://assets/sound/theme.ogg"
 const LASER_FILES: Array[String] = [
 	"laserShoot.wav",
 	"laserShoot1.wav",
@@ -24,6 +25,8 @@ const POWERUP_FILE: String = "powerUp.wav"
 @export var explosion_volume_db: float = -5.5
 @export var explosion_player_death_volume_db: float = -2.5
 @export var powerup_volume_db: float = -4.5
+@export var music_volume_db: float = -12.0
+@export var music_pitch_scale: float = 1.0
 @export var player_laser_cooldown: float = 0.04
 @export var enemy_laser_cooldown: float = 0.09
 @export var explosion_cooldown: float = 0.03
@@ -32,9 +35,11 @@ var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _laser_streams: Array[AudioStream] = []
 var _explosion_streams: Array[AudioStream] = []
 var _powerup_stream: AudioStream
+var _music_stream: AudioStream
 var _laser_players: Array[AudioStreamPlayer] = []
 var _explosion_players: Array[AudioStreamPlayer] = []
 var _powerup_player: AudioStreamPlayer
+var _music_player: AudioStreamPlayer
 var _next_laser_player: int = 0
 var _next_explosion_player: int = 0
 var _player_laser_timer: float = 0.0
@@ -49,6 +54,8 @@ func _ready() -> void:
 	bus.feedback_pulse.connect(_on_feedback_pulse)
 	bus.powerup_collected.connect(_on_powerup_collected)
 	bus.run_started.connect(_on_run_started)
+	bus.run_resumed.connect(_on_run_resumed)
+	_ensure_theme_playing()
 
 func _process(delta: float) -> void:
 	_player_laser_timer = max(_player_laser_timer - delta, 0.0)
@@ -59,6 +66,10 @@ func _on_run_started(_seed: int) -> void:
 	_player_laser_timer = 0.0
 	_enemy_laser_timer = 0.0
 	_explosion_timer = 0.0
+	_ensure_theme_playing()
+
+func _on_run_resumed() -> void:
+	_ensure_theme_playing()
 
 func _on_laser_fired(by_player: bool) -> void:
 	if _laser_streams.is_empty():
@@ -117,6 +128,8 @@ func _load_streams() -> void:
 		if s != null:
 			_explosion_streams.append(s)
 	_powerup_stream = load(SOUND_ROOT + POWERUP_FILE) as AudioStream
+	_music_stream = load(THEME_PATH) as AudioStream
+	_enable_stream_loop(_music_stream)
 
 func _build_players() -> void:
 	for p: AudioStreamPlayer in _laser_players:
@@ -127,6 +140,8 @@ func _build_players() -> void:
 			p.queue_free()
 	if _powerup_player != null and is_instance_valid(_powerup_player):
 		_powerup_player.queue_free()
+	if _music_player != null and is_instance_valid(_music_player):
+		_music_player.queue_free()
 
 	_laser_players.clear()
 	_explosion_players.clear()
@@ -147,6 +162,14 @@ func _build_players() -> void:
 	_powerup_player.bus = audio_bus
 	add_child(_powerup_player)
 
+	_music_player = AudioStreamPlayer.new()
+	_music_player.bus = audio_bus
+	_music_player.volume_db = music_volume_db
+	_music_player.pitch_scale = music_pitch_scale
+	if _music_stream != null:
+		_music_player.stream = _music_stream
+	add_child(_music_player)
+
 	_next_laser_player = 0
 	_next_explosion_player = 0
 
@@ -158,3 +181,22 @@ func _next_pool_player(pool: Array[AudioStreamPlayer], counter_name: String) -> 
 		idx = 0
 	set(counter_name, (idx + 1) % pool.size())
 	return pool[idx]
+
+func _ensure_theme_playing() -> void:
+	if _music_player == null or _music_stream == null:
+		return
+	_music_player.volume_db = music_volume_db
+	_music_player.pitch_scale = music_pitch_scale
+	if _music_player.stream != _music_stream:
+		_music_player.stream = _music_stream
+	if not _music_player.playing:
+		_music_player.play()
+
+func _enable_stream_loop(stream: AudioStream) -> void:
+	if stream == null:
+		return
+	if stream is AudioStreamOggVorbis:
+		(stream as AudioStreamOggVorbis).loop = true
+		return
+	if stream is AudioStreamWAV:
+		(stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD

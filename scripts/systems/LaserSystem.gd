@@ -5,6 +5,7 @@ class_name LaserSystem
 @onready var bus: EventBus = get_parent().get_node("EventBus")
 @onready var gen: PatternGenerator = get_parent().get_node("PatternGenerator")
 @onready var input_system: InputSystem = get_parent().get_node("InputSystem") as InputSystem
+@onready var spawn_system: SpawnSystem = get_parent().get_node("SpawnSystem") as SpawnSystem
 @onready var game_root: Node = get_tree().current_scene
 @onready var player_lasers_mm: MultiMeshInstance3D = game_root.get_node("World/PlayerLasersMM") as MultiMeshInstance3D
 @onready var enemy_lasers_mm: MultiMeshInstance3D = game_root.get_node("World/EnemyLasersMM") as MultiMeshInstance3D
@@ -86,7 +87,9 @@ func _update_player_fire() -> void:
 		return
 	var fire_rate: float = player_fire_rate * (1.0 + state.fire_rate_boost)
 	_player_fire_timer = 1.0 / max(fire_rate, 0.1)
-	_spawn_player_laser(state.player_angle, state.player_z + player_muzzle_forward_offset)
+	var muzzle_lead_time: float = player_muzzle_forward_offset / max(state.speed, 0.1)
+	var spawn_angle: float = GameConstants.normalize_angle(state.player_angle + state.player_ang_vel * muzzle_lead_time)
+	_spawn_player_laser(spawn_angle, state.player_z + player_muzzle_forward_offset)
 
 func _update_enemy_fire() -> void:
 	if not enemy_fire_enabled:
@@ -135,6 +138,7 @@ func _spawn_player_laser(angle: float, z: float) -> void:
 	var z_speed: float = player_laser_speed + state.speed * player_laser_inherit_speed
 	_player_lasers[i]["active"] = true
 	_player_lasers[i]["angle"] = GameConstants.normalize_angle(angle)
+	_player_lasers[i]["angle_vel"] = state.player_ang_vel
 	_player_lasers[i]["z"] = z
 	_player_lasers[i]["z_speed"] = z_speed
 	_player_lasers[i]["age"] = 0.0
@@ -162,18 +166,20 @@ func _update_player_lasers(delta: float) -> void:
 		var shot: Dictionary = _player_lasers[i]
 		if not bool(shot["active"]):
 			continue
-		var angle: float = float(shot["angle"])
+		var angle_vel: float = float(shot["angle_vel"])
+		var angle: float = GameConstants.normalize_angle(float(shot["angle"]) + angle_vel * delta)
 		var z: float = float(shot["z"]) + float(shot["z_speed"]) * delta
 		var age: float = float(shot["age"]) + delta
 		var lifetime: float = max(float(shot["lifetime"]), 0.05)
 		var fade_duration: float = min(max(float(shot["fade_duration"]), 0.01), lifetime)
+		shot["angle"] = angle
 		shot["z"] = z
 		shot["age"] = age
 		if age >= lifetime or z > state.player_z + GameConstants.GENERATE_AHEAD + 24.0:
 			_deactivate_player_laser(i)
 			continue
 		var fade: float = _compute_fade(age, lifetime, fade_duration)
-		mm.set_instance_transform(i, _laser_transform(angle, z, player_laser_radius, player_laser_length, 0.0, float(shot["z_speed"])))
+		mm.set_instance_transform(i, _laser_transform(angle, z, player_laser_radius, player_laser_length, angle_vel, float(shot["z_speed"])))
 		mm.set_instance_custom_data(i, Color(fade, 0.0, 0.0, 0.0))
 		_player_lasers[i] = shot
 
@@ -218,12 +224,14 @@ func _resolve_player_hits() -> void:
 				continue
 			if absf(GameConstants.angle_diff(item_angle, shot_angle)) > player_hit_window_angle:
 				continue
+			var hit_origin: Vector3 = _item_world_origin(item)
 			item.active = false
 			var reward: int = item.value
 			if item.kind == GameConstants.ItemKind.BOMB:
 				reward += elite_hit_value_bonus
 			bus.emit_signal("orb_collected", reward)
 			bus.emit_signal("feedback_pulse", "orb_hit", item_angle, item_z, 0.62)
+			bus.emit_signal("explosion_requested", hit_origin, false, 0.85)
 			hit = true
 			break
 		if hit:
@@ -246,6 +254,8 @@ func _resolve_enemy_hits() -> void:
 			bus.emit_signal("feedback_pulse", "shield_break", shot_angle, shot_z, 1.0)
 		else:
 			bus.emit_signal("feedback_pulse", "player_death", shot_angle, shot_z, 1.2)
+			var player_origin: Vector3 = GameConstants.angle_world_pos(state.player_angle, state.player_z, max(GameConstants.R - 0.9, 0.1), state.difficulty)
+			bus.emit_signal("explosion_requested", player_origin, true, 1.15)
 		break
 
 func _laser_transform(angle: float, z: float, radius: float, length: float, angle_vel: float = 0.0, z_speed_hint: float = 1.0) -> Transform3D:
@@ -290,6 +300,7 @@ func _reset_lasers() -> void:
 		_player_lasers.append({
 			"active": false,
 			"angle": 0.0,
+			"angle_vel": 0.0,
 			"z": 0.0,
 			"z_speed": player_laser_speed,
 			"age": 0.0,
@@ -368,3 +379,10 @@ func _has_property(obj: Object, prop_name: String) -> bool:
 		if prop.has("name") and String(prop["name"]) == prop_name:
 			return true
 	return false
+
+func _item_world_origin(item: SpawnItem) -> Vector3:
+	if spawn_system != null:
+		return spawn_system.get_item_world_origin(item)
+	var angle: float = item.runtime_angle(state.run_time, state.player_z)
+	var z: float = item.runtime_z(state.run_time, state.player_z)
+	return GameConstants.angle_world_pos(angle, z, max(GameConstants.R - 0.9, 0.1), state.difficulty)

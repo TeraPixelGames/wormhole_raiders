@@ -11,7 +11,6 @@ class_name ExplosionSystem
 @export var player_lifetime: float = 0.95
 @export var enemy_scale: float = 2.6
 @export var player_scale: float = 3.4
-@export var explosion_radius_inset: float = 0.95
 
 var _hidden_transform: Transform3D = Transform3D(Basis(), Vector3(0.0, 0.0, -10000.0))
 var _clock: float = 0.0
@@ -22,7 +21,7 @@ var _quad_mesh: QuadMesh = QuadMesh.new()
 func _ready() -> void:
 	_configure_multimesh()
 	_reset_pool()
-	bus.feedback_pulse.connect(_on_feedback_pulse)
+	bus.explosion_requested.connect(_on_explosion_requested)
 	bus.run_started.connect(_on_run_started)
 
 func _on_run_started(_seed: int) -> void:
@@ -43,41 +42,33 @@ func _process(delta: float) -> void:
 			_deactivate(i)
 			continue
 
-		var angle: float = float(slot["angle"])
-		var z: float = float(slot["z"]) + progress * 0.35
+		var origin: Vector3 = slot["origin"] as Vector3
 		var kind: float = float(slot["kind"])
 		var intensity: float = float(slot["intensity"])
 		var base_scale: float = float(slot["scale"])
 		var scale_now: float = base_scale * lerpf(0.35, 1.65, clampf(progress, 0.0, 1.0))
 
-		var pos: Vector3 = GameConstants.angle_world_pos(
-			angle,
-			z,
-			max(GameConstants.R - explosion_radius_inset, 0.2),
-			state.difficulty
-		)
 		var basis: Basis = Basis().scaled(Vector3.ONE * scale_now)
-		mm.set_instance_transform(i, Transform3D(basis, pos))
+		mm.set_instance_transform(i, Transform3D(basis, origin))
 		mm.set_instance_custom_data(i, Color(progress, kind, intensity, 0.0))
 
-func _on_feedback_pulse(kind: String, angle: float, z: float, intensity: float) -> void:
-	match kind:
-		"orb_hit":
-			_spawn(angle, z, 0.0, enemy_lifetime, enemy_scale, max(intensity, 0.7))
-		"player_death":
-			_spawn(angle, z, 1.0, player_lifetime, player_scale, max(intensity, 1.0))
-			_spawn(angle + 0.08, z + 0.3, 1.0, player_lifetime * 0.9, player_scale * 0.72, max(intensity * 0.9, 0.9))
-			_spawn(angle - 0.08, z + 0.2, 1.0, player_lifetime * 0.85, player_scale * 0.65, max(intensity * 0.85, 0.85))
+func _on_explosion_requested(world_pos: Vector3, is_player: bool, intensity: float) -> void:
+	var safe_intensity: float = max(intensity, 0.6)
+	if is_player:
+		_spawn(world_pos, 1.0, player_lifetime, player_scale, max(safe_intensity, 1.0))
+		_spawn(world_pos + Vector3(0.08, 0.02, 0.18), 1.0, player_lifetime * 0.9, player_scale * 0.72, max(safe_intensity * 0.9, 0.9))
+		_spawn(world_pos + Vector3(-0.08, -0.02, 0.12), 1.0, player_lifetime * 0.85, player_scale * 0.65, max(safe_intensity * 0.85, 0.85))
+	else:
+		_spawn(world_pos, 0.0, enemy_lifetime, enemy_scale, max(safe_intensity, 0.7))
 
-func _spawn(angle: float, z: float, kind: float, lifetime: float, scale_val: float, intensity: float) -> void:
+func _spawn(world_pos: Vector3, kind: float, lifetime: float, scale_val: float, intensity: float) -> void:
 	if max_explosions <= 0:
 		return
 	var idx: int = _next_slot
 	_next_slot = (_next_slot + 1) % max_explosions
 	_slots[idx] = {
 		"active": true,
-		"angle": GameConstants.normalize_angle(angle),
-		"z": z,
+		"origin": world_pos,
 		"kind": kind,
 		"start_t": _clock,
 		"lifetime": max(lifetime, 0.05),
@@ -99,8 +90,7 @@ func _reset_pool() -> void:
 	for i in range(max_explosions):
 		_slots.append({
 			"active": false,
-			"angle": 0.0,
-			"z": 0.0,
+			"origin": Vector3.ZERO,
 			"kind": 0.0,
 			"start_t": 0.0,
 			"lifetime": enemy_lifetime,

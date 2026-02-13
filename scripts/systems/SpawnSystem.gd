@@ -173,6 +173,31 @@ func _sync_kind(item: SpawnItem, in_window: bool, mm: MultiMesh, map: Dictionary
 		else:
 			_pup_active_count = max(_pup_active_count - 1, 0)
 
+func get_item_world_origin(item: SpawnItem) -> Vector3:
+	if item == null:
+		return Vector3.ZERO
+
+	var mm: MultiMesh = null
+	var map: Dictionary = {}
+	match item.kind:
+		GameConstants.ItemKind.ORB:
+			mm = _orbs_mm.multimesh
+			map = _orb_item_to_idx
+		GameConstants.ItemKind.BOMB:
+			mm = _bombs_mm.multimesh
+			map = _bomb_item_to_idx
+		GameConstants.ItemKind.POWERUP:
+			mm = _pups_mm.multimesh
+			map = _pup_item_to_idx
+
+	if mm != null and map.has(item.id):
+		var idx: int = int(map[item.id])
+		return mm.get_instance_transform(idx).origin
+
+	var runtime_angle: float = item.runtime_angle(state.run_time, state.player_z)
+	var runtime_z: float = item.runtime_z(state.run_time, state.player_z)
+	return _pos_for_angle_z(runtime_angle, runtime_z)
+
 func _on_run_started(seed: int) -> void:
 	_orb_item_to_idx.clear()
 	_bomb_item_to_idx.clear()

@@ -4,6 +4,7 @@ class_name CollisionSystem
 @onready var state: RunState = get_parent().get_node("RunState")
 @onready var bus: EventBus = get_parent().get_node("EventBus")
 @onready var gen: PatternGenerator = get_parent().get_node("PatternGenerator")
+@onready var spawn_system: SpawnSystem = get_parent().get_node("SpawnSystem") as SpawnSystem
 
 @export var enable_missed_orb_combo_reset: bool = true
 @export var orb_miss_window: float = 0.6
@@ -80,12 +81,14 @@ func _process(delta: float) -> void:
                     orb_hit_z = item_z
 
     if bomb_candidate != null:
+        var player_hit_origin: Vector3 = GameConstants.angle_world_pos(state.player_angle, state.player_z, max(GameConstants.R - 0.9, 0.1), state.difficulty)
         _consume_item(bomb_candidate)
         bus.emit_signal("bomb_hit", state.shield)
         if state.shield:
             bus.emit_signal("feedback_pulse", "shield_break", bomb_hit_angle, bomb_hit_z, 1.0)
         else:
             bus.emit_signal("feedback_pulse", "player_death", bomb_hit_angle, bomb_hit_z, 1.25)
+            bus.emit_signal("explosion_requested", player_hit_origin, true, 1.15)
         return
     if powerup_candidate != null:
         _consume_item(powerup_candidate)
@@ -93,11 +96,20 @@ func _process(delta: float) -> void:
         bus.emit_signal("feedback_pulse", "powerup", powerup_hit_angle, powerup_hit_z, 0.65)
         return
     if orb_candidate != null:
+        var orb_origin: Vector3 = _item_world_origin(orb_candidate)
         _consume_item(orb_candidate)
         bus.emit_signal("orb_collected", orb_candidate.value)
         bus.emit_signal("feedback_pulse", "orb_hit", orb_hit_angle, orb_hit_z, 0.55)
+        bus.emit_signal("explosion_requested", orb_origin, false, 0.85)
 
 func _consume_item(item: SpawnItem) -> void:
     if not item.active:
         return
     item.active = false
+
+func _item_world_origin(item: SpawnItem) -> Vector3:
+    if spawn_system != null:
+        return spawn_system.get_item_world_origin(item)
+    var angle: float = item.runtime_angle(state.run_time, state.player_z)
+    var z: float = item.runtime_z(state.run_time, state.player_z)
+    return GameConstants.angle_world_pos(angle, z, max(GameConstants.R - 0.9, 0.1), state.difficulty)

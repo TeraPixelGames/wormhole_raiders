@@ -1,39 +1,31 @@
-[gd_scene load_steps=37 format=3]
+[gd_scene load_steps=35 format=3 uid="uid://brwbt6pyssq2d"]
 
-[ext_resource type="Script" path="res://scripts/core/RunState.gd" id="1_1"]
-[ext_resource type="Script" path="res://scripts/core/EventBus.gd" id="2_1"]
-[ext_resource type="Script" path="res://scripts/systems/RunController.gd" id="3_1"]
-[ext_resource type="Script" path="res://scripts/systems/InputSystem.gd" id="4_1"]
-[ext_resource type="Script" path="res://scripts/systems/AngleSystem.gd" id="5_1"]
-[ext_resource type="Script" path="res://scripts/systems/SpeedSystem.gd" id="6_1"]
-[ext_resource type="Script" path="res://scripts/systems/DifficultySystem.gd" id="7_1"]
-[ext_resource type="Script" path="res://scripts/systems/PatternGenerator.gd" id="8_1"]
-[ext_resource type="Script" path="res://scripts/systems/SpawnSystem.gd" id="9_1"]
-[ext_resource type="Script" path="res://scripts/systems/CollisionSystem.gd" id="10_1"]
-[ext_resource type="Script" path="res://scripts/systems/ShieldSystem.gd" id="11_1"]
-[ext_resource type="Script" path="res://scripts/systems/ComboSystem.gd" id="12_1"]
-[ext_resource type="Script" path="res://scripts/systems/ScoreSystem.gd" id="13_1"]
-[ext_resource type="Script" path="res://scripts/systems/UISystem.gd" id="14_1"]
-[ext_resource type="Script" path="res://scripts/systems/VFXSystem.gd" id="15_1"]
-[ext_resource type="Shader" path="res://shaders/track_vaporwave_grid.gdshader" id="16_1"]
-[ext_resource type="Script" path="res://scripts/systems/TunnelSystem.gd" id="17_1"]
-[ext_resource type="Script" path="res://scripts/systems/WaveSystem.gd" id="18_1"]
+[ext_resource type="Script" uid="uid://b8v2pw1dkq88s" path="res://scripts/core/RunState.gd" id="1_1"]
+[ext_resource type="Script" uid="uid://dm4x4dt3nvwsx" path="res://scripts/core/EventBus.gd" id="2_1"]
+[ext_resource type="Script" uid="uid://baych8frmcg8y" path="res://scripts/systems/RunController.gd" id="3_1"]
+[ext_resource type="Script" uid="uid://ccpaphsmsc3k3" path="res://scripts/systems/InputSystem.gd" id="4_1"]
+[ext_resource type="Script" uid="uid://cila17ndgk1py" path="res://scripts/systems/AngleSystem.gd" id="5_1"]
+[ext_resource type="Script" uid="uid://v331ybw5882s" path="res://scripts/systems/SpeedSystem.gd" id="6_1"]
+[ext_resource type="Script" uid="uid://q17fgu6khru8" path="res://scripts/systems/DifficultySystem.gd" id="7_1"]
+[ext_resource type="Script" uid="uid://jytokceyolcq" path="res://scripts/systems/PatternGenerator.gd" id="8_1"]
+[ext_resource type="Script" uid="uid://btehdi7anp2l5" path="res://scripts/systems/SpawnSystem.gd" id="9_1"]
+[ext_resource type="Script" uid="uid://ccpvk5k8nu7ce" path="res://scripts/systems/CollisionSystem.gd" id="10_1"]
+[ext_resource type="Script" uid="uid://davxofsj5jouc" path="res://scripts/systems/ShieldSystem.gd" id="11_1"]
+[ext_resource type="Script" uid="uid://bxihukumkhvme" path="res://scripts/systems/ComboSystem.gd" id="12_1"]
+[ext_resource type="Script" uid="uid://dnqt6o07of5pe" path="res://scripts/systems/ScoreSystem.gd" id="13_1"]
+[ext_resource type="Script" uid="uid://do506ax3on77h" path="res://scripts/systems/UISystem.gd" id="14_1"]
+[ext_resource type="Script" uid="uid://d2cmjmp05im1d" path="res://scripts/systems/VFXSystem.gd" id="15_1"]
+[ext_resource type="Shader" uid="uid://ddp83mjsoxsju" path="res://shaders/track_vaporwave_grid.gdshader" id="16_1"]
+[ext_resource type="Script" uid="uid://dgj7mjjt7ps4m" path="res://scripts/systems/TunnelSystem.gd" id="17_1"]
+[ext_resource type="Script" uid="uid://5m6beg45lgtg" path="res://scripts/systems/WaveSystem.gd" id="18_1"]
 [ext_resource type="Script" path="res://scripts/systems/SlipstreamSystem.gd" id="19_1"]
 [ext_resource type="Script" path="res://scripts/systems/ProgressionSystem.gd" id="20_1"]
-[ext_resource type="Script" path="res://scripts/systems/LaserSystem.gd" id="21_1"]
-[ext_resource type="Script" path="res://scripts/systems/ExplosionSystem.gd" id="22_1"]
-[ext_resource type="Script" path="res://scripts/systems/AudioSystem.gd" id="23_1"]
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_1"]
-top_radius = 6.0
-bottom_radius = 6.0
-height = 6000.0
-radial_segments = 28
-rings = 8
-cap_top = false
-cap_bottom = false
+[ext_resource type="Script" uid="uid://cerhlf3mxk0df" path="res://scripts/systems/LaserSystem.gd" id="21_1"]
+[ext_resource type="Script" uid="uid://iamie6dxqedi" path="res://scripts/systems/ExplosionSystem.gd" id="22_1"]
+[ext_resource type="Script" uid="uid://brsbpkh07aova" path="res://scripts/systems/AudioSystem.gd" id="23_1"]
 
 [sub_resource type="ShaderMaterial" id="TrackMat_1"]
+render_priority = 0
 shader = ExtResource("16_1")
 shader_parameter/background_color = Color(0.01, 0.06, 0.16, 1)
 shader_parameter/grid_color = Color(1, 0.52, 0.98, 1)
@@ -46,11 +38,26 @@ shader_parameter/glow_strength = 0.9
 shader_parameter/section_world_span = 22.0
 shader_parameter/longitudinal_tiling = 0.065
 shader_parameter/seam_shift = 0.82
+shader_parameter/flow_visual_strength = 0.0
+shader_parameter/pulse_angle = 0.0
+shader_parameter/pulse_z = 0.0
+shader_parameter/pulse_strength = 0.0
+shader_parameter/pulse_angle_width = 0.08
+shader_parameter/pulse_z_width = 12.0
+shader_parameter/flash_tint = Color(1, 0.95, 0.5, 1)
+shader_parameter/flash_strength = 0.0
+shader_parameter/desat_amount = 0.0
 shader_parameter/scroll_speed = 12.0
 shader_parameter/intensity = 1.0
 shader_parameter/difficulty = 0.0
 
 [sub_resource type="MultiMesh" id="MultiMesh_Track"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.03, 0.035, 0.05, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.36, 0.4, 0.5, 1)
 
 [sub_resource type="MultiMesh" id="MultiMesh_Orbs"]
 
@@ -64,36 +71,26 @@ shader_parameter/difficulty = 0.0
 
 [sub_resource type="MultiMesh" id="MultiMesh_Explosions"]
 
-[sub_resource type="Environment" id="Environment_1"]
-background_mode = 1
-background_color = Color(0.03, 0.035, 0.05, 1)
-ambient_light_source = 2
-ambient_light_color = Color(0.36, 0.4, 0.5, 1)
-ambient_light_energy = 1.0
+[sub_resource type="StandardMaterial3D" id="PlayerMat_1"]
+albedo_color = Color(0.95, 0.95, 1, 1)
+roughness = 0.35
+emission_enabled = true
+emission = Color(0.18, 0.22, 0.35, 1)
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_Player_1"]
 radius = 0.26
-mid_height = 0.8
-
-[sub_resource type="StandardMaterial3D" id="PlayerMat_1"]
-albedo_color = Color(0.95, 0.95, 1, 1)
-emission_enabled = true
-emission = Color(0.18, 0.22, 0.35, 1)
-roughness = 0.35
 
 [node name="Game" type="Node"]
-process_mode = 0
 
 [node name="World" type="Node3D" parent="."]
 
 [node name="Track" type="MultiMeshInstance3D" parent="World"]
-multimesh = SubResource("MultiMesh_Track")
 material_override = SubResource("TrackMat_1")
+multimesh = SubResource("MultiMesh_Track")
 
 [node name="Sun" type="DirectionalLight3D" parent="World"]
 transform = Transform3D(0.95882, -0.154236, 0.238313, 0, 0.839953, 0.542658, -0.284015, -0.52031, 0.805466, 0, 8.47737, 4.13238)
 light_energy = 1.1
-shadow_enabled = false
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="World"]
 environment = SubResource("Environment_1")
@@ -119,24 +116,25 @@ multimesh = SubResource("MultiMesh_Explosions")
 [node name="PlayerRig" type="Node3D" parent="World"]
 
 [node name="PlayerBody" type="MeshInstance3D" parent="World/PlayerRig"]
-mesh = SubResource("CapsuleMesh_Player_1")
-material_override = SubResource("PlayerMat_1")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+material_override = SubResource("PlayerMat_1")
+mesh = SubResource("CapsuleMesh_Player_1")
 
 [node name="Camera3D" type="Camera3D" parent="World/PlayerRig"]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 3.2, -7.0)
-fov = 70.0
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 3.2, -7)
 current = true
+fov = 70.0
 
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="Hud" type="Control" parent="UI"]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="Label" type="Label" parent="UI/Hud"]
-anchors_preset = 10
+layout_mode = 0
 anchor_right = 1.0
 offset_left = 24.0
 offset_top = 24.0
@@ -157,17 +155,17 @@ offset_right = 280.0
 offset_bottom = 190.0
 
 [node name="Reason" type="Label" parent="UI/EndPanel"]
-anchors_preset = 10
+layout_mode = 0
 anchor_right = 1.0
 offset_left = 24.0
 offset_top = 20.0
 offset_right = -24.0
 offset_bottom = 80.0
-horizontal_alignment = 1
 text = "Run Ended"
+horizontal_alignment = 1
 
 [node name="ContinueButton" type="Button" parent="UI/EndPanel"]
-anchors_preset = 8
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -179,7 +177,7 @@ offset_bottom = 56.0
 text = "Continue with Shield (Watch Ad)"
 
 [node name="RestartButton" type="Button" parent="UI/EndPanel"]
-anchors_preset = 8
+layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
@@ -211,8 +209,8 @@ script = ExtResource("4_1")
 script = ExtResource("5_1")
 auto_assign_imported_player_model = false
 player_model_path = "res://imported_models/player_model.glb"
-player_model_rotation_degrees = Vector3(0, -90, 0)
 player_target_height = 0.82
+player_model_rotation_degrees = Vector3(0, -90, 0)
 
 [node name="TunnelSystem" type="Node" parent="Systems"]
 script = ExtResource("17_1")
