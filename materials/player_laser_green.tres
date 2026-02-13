@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+[ext_resource type="Shader" path="res://shaders/laser_blaster_glow.gdshader" id="1_1"]
+
+[resource]
+shader = ExtResource("1_1")
+shader_parameter/laser_color = Color(0.15, 1, 0.25, 1)
+shader_parameter/glow_intensity = 7.4
+shader_parameter/core_width = 0.4
+shader_parameter/core_length = 0.48
+shader_parameter/flicker_speed = 16.0
+shader_parameter/flicker_strength = 0.12

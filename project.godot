@@ -1,0 +1,38 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="VaporRush"
+run/main_scene="res://scenes/Game.tscn"
+config/features=PackedStringArray("4.5")
+config/icon="res://icon.svg"
+
+[autoload]
+
+AdManager="*res://scripts/core/AdManager.gd"
+
+[display]
+
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/size/mode=4
+window/size/borderless=true
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep_width"
+window/handheld/orientation=1
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/meshy-godot-plugin/plugin.cfg")
+
+[rendering]
+
+textures/vram_compression/import_etc2_astc=true

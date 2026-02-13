@@ -1,0 +1,49 @@
+# Godot
+.godot/
+.import/
+export.cfg
+
+# Keep import settings and export presets tracked:
+#!*.import
+#!export_presets.cfg
+
+# Mono / C# (if enabled)
+.mono/
+data_*/
+mono_crash.*.json
+
+# Export/build artifacts
+build/
+dist/
+bin/
+*.pck
+*.apk
+*.aab
+*.ipa
+*.xcarchive
+android/build/
+android/.gradle/
+android/local.properties
+
+# Signing and local secrets
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+
+# IDE / editor
+.idea/
+.vscode/
+*.code-workspace
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,95 @@
+name: Deploy Godot Web To Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.5.1"
+  GODOT_STATUS: "stable"
+
+jobs:
+  export-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot Headless + Export Templates
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y unzip wget
+
+          GODOT_BASE="Godot_v${GODOT_VERSION}-${GODOT_STATUS}"
+          HEADLESS_ZIP="${GODOT_BASE}_linux.x86_64.zip"
+          TEMPLATES_TPZ="${GODOT_BASE}_export_templates.tpz"
+
+          wget -O /tmp/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_STATUS}/${HEADLESS_ZIP}"
+          unzip -o /tmp/godot.zip -d /tmp/godot-bin
+          chmod +x "/tmp/godot-bin/${GODOT_BASE}_linux.x86_64"
+          echo "GODOT_BIN=/tmp/godot-bin/${GODOT_BASE}_linux.x86_64" >> "$GITHUB_ENV"
+
+          TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.${GODOT_STATUS}"
+          mkdir -p "$TEMPLATE_DIR"
+          wget -O /tmp/export_templates.tpz "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_STATUS}/${TEMPLATES_TPZ}"
+          unzip -o /tmp/export_templates.tpz -d /tmp/godot-templates
+          find /tmp/godot-templates -type f -name "*.zip" -exec cp {} "$TEMPLATE_DIR/" \;
+          ls -la "$TEMPLATE_DIR"
+
+      - name: Disable Editor Plugins For CI Export
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sed -i 's/^enabled=PackedStringArray(.*/enabled=PackedStringArray()/g' project.godot
+          grep -n "^\[editor_plugins\]\|^enabled=" project.godot || true
+
+      - name: Disable Ad Plugins For Web CI
+        shell: bash
+        run: |
+          set -euxo pipefail
+          if [ -f export_presets.cfg ]; then
+            sed -i 's/^plugins\/AdmobPlugin=true$/plugins\/AdmobPlugin=false/g' export_presets.cfg || true
+            grep -n "plugins/AdmobPlugin" export_presets.cfg || true
+          fi
+          if [ -d addons/AdmobPlugin ]; then
+            mv addons/AdmobPlugin addons/_AdmobPlugin_disabled_ci
+          fi
+          if [ -d addons/godot-admob ]; then
+            mv addons/godot-admob addons/_godot-admob_disabled_ci
+          fi
+
+      - name: Import Project
+        run: $GODOT_BIN --headless --path . --import --quit
+
+      - name: Export Web Build
+        run: |
+          mkdir -p build/web
+          $GODOT_BIN --headless --path . --export-release "Web" build/web/index.html
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: export-web
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy To Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
