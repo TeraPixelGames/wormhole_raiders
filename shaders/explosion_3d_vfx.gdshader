@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode blend_mix, depth_draw_never, cull_disabled, unshaded;
+render_mode blend_add, depth_draw_never, cull_disabled, unshaded;
 
 // Based on the GodotShaders "3D Explosion VFX" approach:
 // camera-facing quads + depth-aware soft blending.
@@ -59,6 +59,7 @@ void fragment() {
 	float frag_z = zpos.z / zpos.w;
 	float fade_limit = soft_limit + blend_scale * (1.0 - p);
 	float soft = clamp(abs(frag_z - scene_z) / max(fade_limit, 0.001), 0.0, 1.0);
+	soft = max(soft, 0.22);
 
 	ALBEDO = col;
 	EMISSION = emissive;

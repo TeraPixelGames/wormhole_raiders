@@ -7,11 +7,11 @@ class_name ExplosionSystem
 @onready var explosions_mm: MultiMeshInstance3D = game_root.get_node("World/ExplosionsMM") as MultiMeshInstance3D
 
 @export var max_explosions: int = 96
-@export var enemy_lifetime: float = 0.52
+@export var enemy_lifetime: float = 0.68
 @export var player_lifetime: float = 0.95
-@export var enemy_scale: float = 1.8
+@export var enemy_scale: float = 2.6
 @export var player_scale: float = 3.4
-@export var explosion_radius_inset: float = 0.28
+@export var explosion_radius_inset: float = 0.95
 
 var _hidden_transform: Transform3D = Transform3D(Basis(), Vector3(0.0, 0.0, -10000.0))
 var _clock: float = 0.0

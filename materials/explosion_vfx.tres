@@ -6,7 +6,7 @@
 shader = ExtResource("1_1")
 shader_parameter/enemy_color = Color(1, 0.45, 0.1, 1)
 shader_parameter/player_color = Color(1, 0.15, 0.15, 1)
-shader_parameter/glow_strength = 6.5
-shader_parameter/smoke_strength = 0.65
+shader_parameter/glow_strength = 10.5
+shader_parameter/smoke_strength = 0.75
 shader_parameter/soft_limit = 0.22
 shader_parameter/blend_scale = 0.12
